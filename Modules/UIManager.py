@@ -5,8 +5,9 @@ from Modules import NSOApi
 import PySimpleGUI as sg
 
 
-def create_new_friend(friend):
-    return [[sg.Text(friend["name"]), sg.Text(friend["presence"]["state"], key=("-pre-", friend["id"]))]]
+def create_new_friend(username, presence, iss):
+    # makes a new layout to append to main friends list column
+    return [[sg.Text(username, size=(10, 1)), sg.Text(presence, key=("-pre-", iss), size=(10, 1))]]
 
 
 class UIManager(DBManager.DBManager, NSOApi.NSO):
@@ -29,40 +30,44 @@ class UIManager(DBManager.DBManager, NSOApi.NSO):
         self.__friends_layout = friends_layout.layout
 
     async def run_friends_layout(self):
-
         window = sg.Window("Friends List", self.__friends_layout)
-
+        # extending the main layout with friends stored in Friendslist.db
+        self.extend_friend_column(1, window, True)
+        # calls nso api calling object to receive friends list of the current user
         friends = await self.get_friends_list()
 
-        print(friends)
-
+        # initializes the layout
+        self.extend_friend_column(friends, window, False)
         while True:
-            for friend in friends["result"]["friends"]:
-                print(friend["id"])
-                res = self.cursor.execute("SELECT 1 FROM Friends WHERE Friend_UID = ?", (friend["id"],))
-                if res.fetchone() != 1:
-                    self.cursor.execute("INSERT INTO Friends (Username,Friend_UID) VALUES (?,?)", (friend["name"],
-                                                                                                   friend["id"],))
-                    new_friend = create_new_friend(friend)
-                    window.extend_layout(window["-Column-"], new_friend)
-                    self.conn.commit()
-
-                print(friend)
-
             event, values = window.read(timeout=5000, timeout_key="__TIMEOUT__")
 
             if event in ("Cancel", "Exit", None):
                 break
-            if event == "-RELOAD-":
-                friends = await self.get_friends_list()
-                print(friends)
-                # for friend in friends["result"]["friends"]:
-                #     new_layout = [[sg.Text(friend["name"]), sg.Text(friend["presence"]["state"] )]]
-                #     window.extend_layout(window["-Column-"], new_layout)
-            if event == "-ID-":
-                window[("-pre-", 4900762031226880)].update(value="LOL")
             if event == "__TIMEOUT__":
+                # every timeout check if any of the users friends have changed presence status
                 friends = await self.get_friends_list()
                 for friend in friends["result"]["friends"]:
-                    new_friend = create_new_friend(friend)
+                    window[("-pre-", friend["id"])].update(value=friend["presence"]["state"])
+
+    def extend_friend_column(self, friends, window, first):
+        if first:
+            # for the first time only use data from the database to update main layout
+            usernames = [username[0] for username in self.cursor.execute("SELECT Username FROM FRIENDS")]
+            ids = [iss[0] for iss in self.cursor.execute("SELECT Friend_UID FROM FRIENDS")]
+
+            for username, iss in zip(usernames, ids):
+                print(username, iss)
+                new_friend = create_new_friend(username, "", iss)
+                window.extend_layout(window["-Column-"], new_friend)
+        else:
+            for friend in friends["result"]["friends"]:
+
+                # check if friend already exists in database,
+                # if it doesn't, add the friend to the db and extend the layout
+                res = self.cursor.execute("SELECT 1 FROM Friends WHERE Friend_UID = ?", (friend["id"],))
+                if res.fetchone() != (1,):
+                    self.cursor.execute("INSERT INTO Friends (Username,Friend_UID) VALUES (?,?)", (friend["name"],
+                                                                                                   friend["id"],))
+                    new_friend = create_new_friend(friend["name"], friend["presence"]["state"], friend["id"])
                     window.extend_layout(window["-Column-"], new_friend)
+                    self.conn.commit()

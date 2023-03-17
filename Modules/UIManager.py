@@ -7,7 +7,7 @@ import PySimpleGUI as sg
 
 def create_new_friend(username, presence, iss):
     # makes a new layout to append to main friends list column
-    return [[sg.Text(username, size=(10, 1)), sg.Text(presence, key=("-pre-", iss), size=(10, 1))]]
+    return [[sg.Text(username, size=(10, 1)), sg.Text(presence, key=("-pre-", iss))]]
 
 
 class UIManager(DBManager.DBManager, NSOApi.NSO):
@@ -47,7 +47,11 @@ class UIManager(DBManager.DBManager, NSOApi.NSO):
                 # every timeout check if any of the users friends have changed presence status
                 friends = await self.get_friends_list()
                 for friend in friends["result"]["friends"]:
-                    window[("-pre-", friend["id"])].update(value=friend["presence"]["state"])
+                    if friend["presence"]["state"] == "ONLINE":
+                        state = f'{friend["presence"]["state"]} Playing: {friend["presence"]["game"]["name"]}'
+                        window[("-pre-", friend["id"])].update(value=state)
+                    else:
+                        window[("-pre-", friend["id"])].update(value=friend["presence"]["state"])
 
     def extend_friend_column(self, friends, window, first):
         if first:

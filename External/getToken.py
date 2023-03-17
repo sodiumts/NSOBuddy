@@ -73,8 +73,11 @@ class Login(object):
         content = requests.Request('GET', url, params=payload, headers=headers).prepare()
         webbrowser.open(content.url)
 
-
-        token_code = JWToken.findall(input('Please paste the link of "Use this account" button here after login:\n'))[0]
+        try:
+            token_code = JWToken.findall(input('Please paste the link of "Use this account" button here after login:\n'))[0]
+        except:
+            print("Invalid token, please retry")
+            return self.login()
         url = 'https://accounts.nintendo.com/connect/1.0.0/api/session_token'
         payload = {
             'client_id': ClientID,

@@ -1,16 +1,7 @@
 import asyncio
-from NSOApiManager import NSOApi
-import json
-import PySimpleGUI
+from Modules import UIManager
 
-nso = NSOApi.NSO()
-asyncio.run(nso.login_process())
+UI = UIManager.UIManager("db.db")
 
-
-
-async def main():
-    
-
-
-
-asyncio.run(main())
+asyncio.run(UI.login_process())
+asyncio.run(UI.run_friends_layout())

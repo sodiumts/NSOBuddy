@@ -4,7 +4,7 @@ from External import getToken
 
 class NSO:
     async def login_process(self) -> None:
-        # check if there is a previous __session_token that's been generated
+        # check if there is a previous session_token that's been generated
         try:
             with open("session_token.txt", "r") as f:
                 lines = f.readlines()
@@ -12,20 +12,20 @@ class NSO:
         except:
             print("session_token.txt file was not found, going to generate.")
 
-        # check if __session_token is valid, otherwise generate a new one
+        # check if session_token is valid, otherwise generate a new one
         if self.session_token:
             if await self.check_session_token_valid() != 200:
                 print("Token expired, need to generate a new one.")
-                await self.get___session_token()
+                await self.get_session_token()
         else:
-            await self.get___session_token()
+            await self.get_session_token()
 
         # continue the login process to nintendo servers
         await self.get_access_token()
         await self.login()
         print("API is ready to use.")
 
-    async def get___session_token(self) -> None:
+    async def get_session_token(self) -> None:
         self.session_token = getToken.Login().session_token
         with open("session_token.txt", "w") as f:
             f.write(self.session_token)

@@ -4,6 +4,7 @@ import requests
 from Modules import NSOApi
 import PySimpleGUI as sg
 
+AGENT_VERSION = "2.6.0"
 
 def create_new_friend(username, presence, iss):
     # makes a new layout to append to main friends list column
@@ -20,7 +21,7 @@ class UIManager(DBManager.DBManager, NSOApi.NSO):
 
         # declare variables for different tokens
         self.clientID = "71b963c1b7b6d119"
-        self.userAgentVersion = "2.5.0"
+        self.userAgentVersion = AGENT_VERSION
         self.request_id = None
         self.access_token = None
         self.webApiServerCredential = None

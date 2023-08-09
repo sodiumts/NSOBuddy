@@ -1,6 +1,6 @@
 import requests
 from External import getToken
-
+AGENT_VERSION = "2.6.0"
 
 class NSO:
     async def login_process(self) -> None:
@@ -36,13 +36,9 @@ class NSO:
         url = "https://accounts.nintendo.com/connect/1.0.0/api/token"
 
         headers = {
-            "Headers Host": "accounts.nintendo.com",
             "Content-Type": "application/json; charset=utf-8",
-            "Connection": "keep-alive",
-            "User-Agent": "OnlineLounge/1.0.4 NASDKAPI iOS",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 8.0.0)",
             "Accept": "application/json",
-            "Accept-Language": "en-US",
-            "Accept-Encoding": "gzip, deflate"
         }
         payload = {
             "client_id": self.clientID,
@@ -55,13 +51,9 @@ class NSO:
         url = "https://accounts.nintendo.com/connect/1.0.0/api/token"
 
         headers = {
-            "Headers Host": "accounts.nintendo.com",
             "Content-Type": "application/json; charset=utf-8",
-            "Connection": "keep-alive",
-            "User-Agent": "OnlineLounge/1.0.4 NASDKAPI iOS",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 8.0.0)",
             "Accept": "application/json",
-            "Accept-Language": "en-US",
-            "Accept-Encoding": "gzip, deflate"
         }
 
         payload = {
@@ -71,6 +63,7 @@ class NSO:
         }
 
         response = self.Session.post(url=url, json=payload, headers=headers).json()
+        print(response)
         self.access_token = response["access_token"]
         print("Access token gotten successfully.")
 
